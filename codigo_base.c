@@ -36,7 +36,7 @@ int carregarEnsaio(const char *nomeArquivo, Ensaio *ensaio){
     arquivo = fopen(nomeArquivo, "r");
 
     if(arquivo == NULL){
-        printf("Erro ao abrir o arquivo.");
+        printf("Erro ao abrir o arquivo.\n");
         return 1;
     } else{
     printf("abriu");
@@ -44,15 +44,46 @@ int carregarEnsaio(const char *nomeArquivo, Ensaio *ensaio){
 
     //ler o arquivo
     if(fscanf(arquivo, "%59s", ensaio->maquina) !=1 ||
-       fscanf(arquivo, "%f %f %f", &ensaio->rpmNominal, &ensaio->tempLimite, &ensaio->vibLimite) !=3 ||
+       fscanf(arquivo, "%f %f %f",
+               &ensaio->rpmNominal,
+               &ensaio->tempLimite,
+               &ensaio->vibLimite) !=3 ||
        fscanf(arquivo, "%d", &ensaio->quantidade) !=1
-       ){
-        printf("Erro ao ler o arquivo");
+    ){
+        printf("Erro ao ler o arquivo.\n");
         fclose(arquivo);
         return 1;
-       } else{
-       printf("leu");
-       }
+    } else{
+        printf("Leitura do arquivo feita com sucesso");
+    }
+
+    //alocar memoria dinamicamente
+    ensaio->amostras = malloc(ensaio->quantidade * sizeof(Amostra));
+    if (ensaio->amostras== NULL){
+        printf("Erro ao alocar memoria.\n");
+        fclose(arquivo);
+        return 1;
+    } else{
+        printf("Memoria alocado com sucesso");
+    }
+
+    //Ler as amostras
+    for(int i=0; i<ensaio->quantidade; i++){
+        if(fscanf(arquivo, "%f %f %f %f",
+            &ensaio->amostras[i].tempo,
+            &ensaio->amostras[i].rpm,
+            &ensaio->amostras[i].temperatura,
+            &ensaio->amostras[i].vibracao) != 4
+        ){
+            printf("Erro ao ler as amostras.\n");
+            liberarEnsaio(ensaio);
+            fclose(arquivo);
+            return 1;
+        } else{
+            printf("Leitura das amostras concluida com sucesso.\n");
+        }
+    }
+
     fclose(arquivo);
     return 0;
 };
